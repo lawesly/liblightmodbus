@@ -34,10 +34,20 @@ uint8_t modbusExamine( ModbusFrameInfo *info, uint8_t dir, const uint8_t *frame,
 	//Null pointer check
 	if ( info == NULL ) return MODBUS_ERROR_OTHER;
 
-	//At least setup the struct if frame is invalid
-	memset( info, 0, sizeof( struct modbusFrameInfo ) );
-	info->data = NULL; //This is for weird patforms that don't consider 0 to be NULL
+	//Struct setup - assume everything is undefined
 	info->direction = dir;
+	info->address = MODBUS_EXAMINE_UNDEFINED;
+	info->function = MODBUS_EXAMINE_UNDEFINED;
+	info->exception = MODBUS_EXAMINE_UNDEFINED;
+	info->type = MODBUS_EXAMINE_UNDEFINED;
+	info->index = MODBUS_EXAMINE_UNDEFINED;
+	info->count = MODBUS_EXAMINE_UNDEFINED;
+	info->access = MODBUS_EXAMINE_UNDEFINED;
+	info->crc = MODBUS_EXAMINE_UNDEFINED;
+	info->andmask = MODBUS_EXAMINE_UNDEFINED;
+	info->ormask = MODBUS_EXAMINE_UNDEFINED;
+	info->length = 0;
+	info->data = NULL; //This is for weird patforms that don't consider 0 to be NULL
 
 	//Check for bad frame
 	if ( length == 0 || frame == NULL ) return MODBUS_ERROR_OTHER;
@@ -153,11 +163,14 @@ uint8_t modbusExamine( ModbusFrameInfo *info, uint8_t dir, const uint8_t *frame,
 			case 16:
 				info->index = modbusSwapEndian( parser->request16.index );
 				info->count = modbusSwapEndian( parser->request16.count );
+				info->data = parser->request16.values;
+				info->length = parser->request16.length;
 				break;
 
 			//Mask write
 			case 22:
 				info->index = modbusSwapEndian( parser->request22.index );
+				info->count = 1;
 				info->andmask = modbusSwapEndian( parser->request22.andmask );
 				info->ormask = modbusSwapEndian( parser->request22.ormask );
 				break;
@@ -217,6 +230,7 @@ uint8_t modbusExamine( ModbusFrameInfo *info, uint8_t dir, const uint8_t *frame,
 			//Mask write
 			case 22:
 				info->index = modbusSwapEndian( parser->response22.index );
+				info->count = 1;
 				info->andmask = modbusSwapEndian( parser->response22.andmask );
 				info->ormask = modbusSwapEndian( parser->response22.ormask );
 				break;

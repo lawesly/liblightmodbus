@@ -41,18 +41,19 @@
 
 typedef struct modbusFrameInfo
 {
-	uint8_t direction; //Just a friendly reminder
+	//Struct members are signed types because each of them can take MODBUS_EXAMINE_UNDEFINED value
+	uint8_t direction; //Just a friendly reminder (MODBUS_EXAMINE_REQUEST/MODBUS_EXAMINE_RESPONSE)
 	uint8_t address; //Slave address
-	uint8_t function; //Function
-	uint8_t exception; //Exception number
-	uint8_t type; //Data type (coil/register and so on)
-	uint8_t index; //Register index
-	uint8_t count; //Data unit count
-	uint8_t access; //Access type - read/write
+	int16_t function; //Function
+	int16_t exception; //Exception number
+	int8_t type; //Data type (MODBUS_EXAMINE_COIL/MODBUS_EXAMINE_HOLDING_REGISTER and so on)
+	int32_t index; //Register index
+	int32_t count; //Data unit count
+	uint8_t access; //Access type (MODBUS_EXAMINE_READ/MODBUS_EXAMINE_WRITE)
 	uint16_t crc; //CRC
 
-	//In case of request 22
-	uint16_t andmask, ormask;
+	//Request 22 exclusive
+	int32_t andmask, ormask;
 
 	//Binary data - pointer and length in bytes
 	//Important: Endianness of this data remains unchanged since this pointer points to the frame itself
